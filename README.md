@@ -1,6 +1,3 @@
-😂😂 Hari, **dan delete karala aye hadanna one naha.** Oyaṭa copy-paste karanna lesi **eka single block ekak** widihata denna.
-
-Meka **exactly full `README.md` content eka**. 👇
 
 ````markdown
 # 💳 WalletX - Digital Wallet System
