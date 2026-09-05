@@ -2,31 +2,38 @@
 
 WalletX is a web-based digital wallet system that allows users to securely manage their money through a simple and user-friendly interface.
 
-The system supports user registration, login, wallet creation, deposits, withdrawals, money transfers, and transaction history.
+The system allows users to create and manage their wallets, deposit and withdraw money, transfer money to other users, and view their wallet activities.
+
+The project also demonstrates the practical implementation of **CQRS (Command Query Responsibility Segregation)** and **Event Sourcing** in a full-stack web application.
+
+---
 
 ## 🚀 Features
 
-- 🔐 User Registration & Login
+- 🔐 User Registration and Login
 - 🛡️ JWT-based Authentication
 - 💳 Digital Wallet Management
 - 💰 Deposit Money
 - 💸 Withdraw Money
 - 🔄 Transfer Money Between Wallets
-- 👤 Receiver Verification
-- 📊 Wallet Balance & Transaction Summary
+- 👤 Receiver Wallet Verification
+- 📊 Wallet Balance and Transaction Summary
 - 📜 Transaction History
 - 🔒 Wallet Ownership Validation
+- 🚫 Prevention of Invalid Transfers
 - 🗄️ MongoDB Database
 
-## 🏗️ Architecture
+---
 
-The system follows the CQRS (Command Query Responsibility Segregation) approach.
+## 🏗️ CQRS Implementation
+
+This project uses **CQRS (Command Query Responsibility Segregation)** to separate operations that change data from operations that retrieve data.
 
 ### Commands
 
-Commands are responsible for operations that change data.
+Commands handle operations that modify the wallet state.
 
-Examples:
+The project includes the following commands:
 
 - Create Wallet
 - Deposit Money
@@ -35,46 +42,32 @@ Examples:
 - Register User
 - Login User
 
+These operations are organized inside the `commands` folder.
+
 ### Queries
 
-Queries are responsible for retrieving data.
+Queries are responsible for retrieving information from the system.
 
-Examples:
+The project includes:
 
 - Get My Wallet
 - Get Wallet Details
 - Get Transactions
 - Find Receiver
 
-### Event Sourcing
+These operations are organized inside the `queries` folder.
 
-Important wallet operations are stored as events.
-
-Examples:
-
-- `WalletCreated`
-- `MoneyDeposited`
-- `MoneyWithdrawn`
-- `MoneyTransferred`
-- `MoneyReceived`
-
-This allows the system to maintain a history of important wallet activities.
-
-## 🔄 System Flow
+### CQRS Flow
 
 ```text
-User
-  ↓
-Frontend
-  ↓
-API Request
-  ↓
+User Request
+     ↓
 Command / Query
-  ↓
+     ↓
 Backend
-  ↓
+     ↓
 MongoDB
-  ↓
+     ↓
 Response
-  ↓
+     ↓
 Frontend
