@@ -22,15 +22,48 @@ app.get("/", (req, res) => {
     });
 });
 
-mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => {
-        console.log("MongoDB Connected");
+// Connect to MongoDB before handling requests
+const connectDB = async () => {
+    if (mongoose.connection.readyState === 1) {
+        return;
+    }
 
-        app.listen(process.env.PORT, () => {
-            console.log(`Server running on port ${process.env.PORT}`);
-        });
-    })
-    .catch((error) => {
+    await mongoose.connect(process.env.MONGO_URI);
+
+    console.log("MongoDB Connected");
+};
+
+// Make sure database is connected before API requests
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
         console.error("MongoDB connection failed:", error.message);
-    });
+
+        res.status(500).json({
+            success: false,
+            message: "Database connection failed"
+        });
+    }
+});
+
+// Start server only when running locally
+if (!process.env.VERCEL) {
+    connectDB()
+        .then(() => {
+            app.listen(process.env.PORT || 5000, () => {
+                console.log(
+                    `Server running on port ${process.env.PORT || 5000}`
+                );
+            });
+        })
+        .catch((error) => {
+            console.error(
+                "MongoDB connection failed:",
+                error.message
+            );
+        });
+}
+
+module.exports = app;
