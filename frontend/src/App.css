@@ -1203,3 +1203,30 @@ footer {
     font-size: 14px;
     font-weight: 600;
 }
+
+/* Back to Home button */
+
+.back-home-button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 11px 16px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+
+    background: transparent;
+    color: #8292ad;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.25s ease;
+}
+
+.back-home-button:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(72, 139, 255, 0.25);
+}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "./api";
 import "./App.css";
+import Home from "./pages/Home";
 
 function App() {
 
@@ -13,6 +14,11 @@ function App() {
   );
 
   const [isRegister, setIsRegister] = useState(false);
+
+  // Show Home page when user is not logged in
+  const [showHome, setShowHome] = useState(
+    !localStorage.getItem("token")
+  );
 
   const [authUserName, setAuthUserName] = useState("");
   const [authPassword, setAuthPassword] = useState("");
@@ -27,7 +33,6 @@ function App() {
   const [wallet, setWallet] = useState(null);
 
   const [userName, setUserName] = useState("");
-
   const [amount, setAmount] = useState("");
 
   const [transferAmount, setTransferAmount] = useState("");
@@ -58,11 +63,11 @@ function App() {
 
       const { token, user } = response.data.data;
 
-      // Save login information
       localStorage.setItem("token", token);
       localStorage.setItem("userName", user.userName);
 
       setIsLoggedIn(true);
+      setShowHome(false);
 
       setAuthUserName("");
       setAuthPassword("");
@@ -125,6 +130,7 @@ function App() {
     localStorage.removeItem("userName");
 
     setIsLoggedIn(false);
+    setShowHome(true);
 
     setWallet(null);
     setWalletId("");
@@ -138,32 +144,25 @@ function App() {
 
 
   // ==============================
-  // Load logged-in user's wallet
+  // Load My Wallet
   // ==============================
 
   const loadMyWallet = async () => {
     try {
 
-      // Ask backend for the wallet
-      // belonging to the logged-in user
       const response = await api.get(
         "/queries/my-wallet"
       );
 
       const myWallet = response.data.data;
 
-      // Save wallet information
       setWallet(myWallet);
-
-      // Save wallet ID
       setWalletId(myWallet._id);
 
-      // Load transaction history
       await loadTransactions(myWallet._id);
 
     } catch (error) {
 
-      // User may not have a wallet yet
       setWallet(null);
       setWalletId("");
       setTransactions([]);
@@ -172,14 +171,12 @@ function App() {
         error.response?.data?.message ||
         "No wallet found for this user"
       );
-
     }
   };
 
 
   // ==============================
-  // Automatically load wallet
-  // after login
+  // Load wallet after login
   // ==============================
 
   useEffect(() => {
@@ -214,7 +211,6 @@ function App() {
 
       setWallet(newWallet);
       setWalletId(newWallet._id);
-
       setUserName("");
 
       await loadTransactions(newWallet._id);
@@ -243,13 +239,11 @@ function App() {
       return;
     }
 
-    // MongoDB ObjectId has 24 characters
     if (id.length !== 24) {
       setReceiverName("");
       return;
     }
 
-    // Do not allow your own wallet
     if (id === walletId) {
       setReceiverName("");
       return;
@@ -274,7 +268,7 @@ function App() {
 
 
   // ==============================
-  // Get My Wallet
+  // Get Wallet
   // ==============================
 
   const getWallet = async () => {
@@ -285,7 +279,6 @@ function App() {
         return;
       }
 
-      // Always load the logged-in user's wallet
       await loadMyWallet();
 
     } catch (error) {
@@ -300,7 +293,7 @@ function App() {
 
 
   // ==============================
-  // Deposit Money
+  // Deposit
   // ==============================
 
   const deposit = async () => {
@@ -321,7 +314,6 @@ function App() {
 
       setAmount("");
 
-      // Reload wallet balance
       await loadMyWallet();
 
       alert("Money deposited successfully!");
@@ -338,7 +330,7 @@ function App() {
 
 
   // ==============================
-  // Withdraw Money
+  // Withdraw
   // ==============================
 
   const withdraw = async () => {
@@ -359,7 +351,6 @@ function App() {
 
       setAmount("");
 
-      // Reload wallet balance
       await loadMyWallet();
 
       alert("Money withdrawn successfully!");
@@ -376,7 +367,7 @@ function App() {
 
 
   // ==============================
-  // Transfer Money
+  // Transfer
   // ==============================
 
   const transfer = async () => {
@@ -398,9 +389,10 @@ function App() {
         return;
       }
 
-      // Make sure receiver exists
       if (!receiverName) {
-        alert("Please enter a valid receiver wallet ID");
+        alert(
+          "Please enter a valid receiver wallet ID"
+        );
         return;
       }
 
@@ -417,7 +409,6 @@ function App() {
       setReceiverWalletId("");
       setReceiverName("");
 
-      // Reload sender wallet
       await loadMyWallet();
 
       alert("Money transferred successfully!");
@@ -474,11 +465,12 @@ function App() {
     navigator.clipboard.writeText(walletId);
 
     alert("Wallet ID copied!");
+
   };
 
 
   // ==============================
-  // Calculate Statistics
+  // Statistics
   // ==============================
 
   const totalDeposited = transactions
@@ -507,7 +499,7 @@ function App() {
 
 
   // ==============================
-  // Transaction CSS class
+  // Transaction Class
   // ==============================
 
   const getTransactionClass = (type) => {
@@ -529,11 +521,12 @@ function App() {
     }
 
     return "";
+
   };
 
 
   // ==============================
-  // Transaction display name
+  // Transaction Name
   // ==============================
 
   const getTransactionName = (type) => {
@@ -559,16 +552,47 @@ function App() {
     }
 
     return type;
+
   };
 
 
-  // ==============================
+  // ==================================================
+  // HOME PAGE
+  // ==================================================
+
+  if (!isLoggedIn && showHome) {
+
+    return (
+      <Home
+        onLogin={() => {
+
+          setShowHome(false);
+          setIsRegister(false);
+          setAuthError("");
+
+        }}
+
+        onRegister={() => {
+
+          setShowHome(false);
+          setIsRegister(true);
+          setAuthError("");
+
+        }}
+      />
+    );
+
+  }
+
+
+  // ==================================================
   // LOGIN / REGISTER PAGE
-  // ==============================
+  // ==================================================
 
   if (!isLoggedIn) {
 
     return (
+
       <div className="auth-page">
 
         <div className="auth-card">
@@ -591,9 +615,11 @@ function App() {
 
 
           {authError && (
+
             <div className="auth-error">
               {authError}
             </div>
+
           )}
 
 
@@ -662,6 +688,10 @@ function App() {
           </button>
 
 
+          {/* ======================================
+              Login / Register Switch
+          ======================================= */}
+
           <div className="auth-switch">
 
             {isRegister ? (
@@ -702,25 +732,49 @@ function App() {
 
           </div>
 
+
+          {/* ======================================
+              BACK TO HOME
+          ======================================= */}
+
+          <button
+            className="back-home-button"
+            onClick={() => {
+
+              setShowHome(true);
+              setIsRegister(false);
+
+              setAuthUserName("");
+              setAuthPassword("");
+              setAuthError("");
+
+            }}
+          >
+            ← Back to Home
+          </button>
+
+
         </div>
 
       </div>
+
     );
+
   }
 
 
-  // ==============================
-  // MAIN DASHBOARD
-  // ==============================
+  // ==================================================
+  // DASHBOARD
+  // ==================================================
 
   return (
 
     <div className="app">
 
 
-      {/* ==========================
+      {/* ==========================================
           NAVBAR
-      =========================== */}
+      =========================================== */}
 
       <header className="navbar">
 
@@ -748,9 +802,15 @@ function App() {
         <div className="navbar-actions">
 
           <div className="secure-badge">
-            <span>●</span>
+
+            <span>
+              ●
+            </span>
+
             Secure Wallet
+
           </div>
+
 
           <button
             className="logout-button"
@@ -764,16 +824,16 @@ function App() {
       </header>
 
 
-      {/* ==========================
+      {/* ==========================================
           DASHBOARD
-      =========================== */}
+      =========================================== */}
 
       <main className="dashboard">
 
 
-        {/* ==========================
+        {/* ======================================
             WELCOME
-        =========================== */}
+        ======================================= */}
 
         <section className="welcome-section">
 
@@ -804,9 +864,9 @@ function App() {
         </section>
 
 
-        {/* ==========================
-            BALANCE CARD
-        =========================== */}
+        {/* ======================================
+            BALANCE
+        ======================================= */}
 
         <section className="balance-card">
 
@@ -830,6 +890,7 @@ function App() {
 
             </div>
 
+
             <div className="wallet-symbol">
               💳
             </div>
@@ -846,10 +907,8 @@ function App() {
               </span>
 
               <strong>
-
                 {wallet?.userName ||
                   "No wallet connected"}
-
               </strong>
 
             </div>
@@ -870,11 +929,12 @@ function App() {
         </section>
 
 
-        {/* ==========================
+        {/* ======================================
             STATISTICS
-        =========================== */}
+        ======================================= */}
 
         <section className="stats-grid">
+
 
           <div className="stat-card">
 
@@ -940,26 +1000,25 @@ function App() {
 
           </div>
 
+
         </section>
 
 
-        {/* ==========================
+        {/* ======================================
             CONTENT
-        =========================== */}
+        ======================================= */}
 
         <div className="content-grid">
 
 
-          {/* ========================
+          {/* ====================================
               LEFT COLUMN
-          ========================= */}
+          ===================================== */}
 
           <div className="left-column">
 
 
-            {/* ======================
-                CREATE WALLET
-            ======================= */}
+            {/* CREATE WALLET */}
 
             {!wallet && (
 
@@ -1020,9 +1079,7 @@ function App() {
             )}
 
 
-            {/* ======================
-                YOUR WALLET
-            ======================= */}
+            {/* YOUR WALLET */}
 
             <section className="panel">
 
@@ -1118,9 +1175,7 @@ function App() {
             </section>
 
 
-            {/* ======================
-                MONEY OPERATIONS
-            ======================= */}
+            {/* MONEY OPERATIONS */}
 
             <section className="panel">
 
@@ -1174,6 +1229,7 @@ function App() {
 
               <div className="action-grid">
 
+
                 <button
                   className="action-button deposit-button"
                   onClick={deposit}
@@ -1221,6 +1277,7 @@ function App() {
 
                 </button>
 
+
               </div>
 
             </section>
@@ -1228,16 +1285,14 @@ function App() {
           </div>
 
 
-          {/* ========================
+          {/* ====================================
               RIGHT COLUMN
-          ========================= */}
+          ===================================== */}
 
           <div className="right-column">
 
 
-            {/* ======================
-                TRANSFER
-            ======================= */}
+            {/* TRANSFER */}
 
             <section className="panel transfer-panel">
 
@@ -1268,6 +1323,7 @@ function App() {
 
               <div className="transfer-visual">
 
+
                 <div className="transfer-wallet">
 
                   <div>
@@ -1275,7 +1331,8 @@ function App() {
                   </div>
 
                   <span>
-                    {wallet?.userName || "Your Wallet"}
+                    {wallet?.userName ||
+                      "Your Wallet"}
                   </span>
 
                 </div>
@@ -1293,10 +1350,12 @@ function App() {
                   </div>
 
                   <span>
-                    {receiverName || "Receiver"}
+                    {receiverName ||
+                      "Receiver"}
                   </span>
 
                 </div>
+
 
               </div>
 
@@ -1397,12 +1456,11 @@ function App() {
 
               </button>
 
+
             </section>
 
 
-            {/* ======================
-                TRANSACTIONS
-            ======================= */}
+            {/* TRANSACTIONS */}
 
             <section className="panel transactions-panel">
 
@@ -1549,14 +1607,15 @@ function App() {
 
             </section>
 
+
           </div>
 
         </div>
 
 
-        {/* ==========================
+        {/* ======================================
             FOOTER
-        =========================== */}
+        ======================================= */}
 
         <footer>
 
@@ -1586,6 +1645,7 @@ function App() {
       </main>
 
     </div>
+
   );
 }
 
