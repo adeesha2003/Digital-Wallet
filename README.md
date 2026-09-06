@@ -1,5 +1,4 @@
 
-````markdown
 # 💳 WalletX - Digital Wallet System
 
 WalletX is a web-based digital wallet system that allows users to securely manage their money through a simple and user-friendly interface.
@@ -484,4 +483,3 @@ Possible future improvements include:
 
 A full-stack digital wallet application built using React, Node.js, Express, and MongoDB with CQRS and Event Sourcing.
 
-````
