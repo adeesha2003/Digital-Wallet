@@ -12,17 +12,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/commands", commandRoutes);
-app.use("/api/queries", queryRoutes);
-app.use("/api/auth", authRoutes);
 
-app.get("/", (req, res) => {
-    res.json({
-        message: "Digital Wallet API is running"
-    });
-});
-
-// Connect to MongoDB before handling requests
+// Connect to MongoDB before handling API requests
 const connectDB = async () => {
     if (mongoose.connection.readyState === 1) {
         return;
@@ -33,7 +24,8 @@ const connectDB = async () => {
     console.log("MongoDB Connected");
 };
 
-// Make sure database is connected before API requests
+
+// Make sure MongoDB is connected before API routes
 app.use(async (req, res, next) => {
     try {
         await connectDB();
@@ -47,6 +39,21 @@ app.use(async (req, res, next) => {
         });
     }
 });
+
+
+// API Routes
+app.use("/api/commands", commandRoutes);
+app.use("/api/queries", queryRoutes);
+app.use("/api/auth", authRoutes);
+
+
+// Test route
+app.get("/", (req, res) => {
+    res.json({
+        message: "Digital Wallet API is running"
+    });
+});
+
 
 // Start server only when running locally
 if (!process.env.VERCEL) {
@@ -65,5 +72,6 @@ if (!process.env.VERCEL) {
             );
         });
 }
+
 
 module.exports = app;
